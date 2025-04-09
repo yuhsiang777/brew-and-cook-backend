@@ -13,15 +13,8 @@ module.exports = new EntitySchema({
     },
     name: {
       type: "enum",
-      enum: ["主要管理員", "次要管理員"],
+      enum: ["主要管理員", "次要管理員", "會員"],
       nullable: false
     }
   },
-  constraints: [
-    {
-      name: "role_name_check",
-      type: "check",
-      expression: `"name" IN ("主要管理員", "次要管理員")`
-    }
-  ]
 })

@@ -11,7 +11,7 @@ module.exports = new EntitySchema({
       generated: "uuid",
       nullable: false,
     },
-    users_id: {
+    user_id: {
       type: "uuid",
       nullable: false,
     },
@@ -24,15 +24,13 @@ module.exports = new EntitySchema({
       nullable: false,
     }
   },
-  constraints: [
-    {
-      name: "fk_user_id",  // 外鍵約束名稱
-      type: "foreign key",  // 外鍵類型
-      columnNames: ["users_id"],  // 參照的欄位，即 PasswordResets 表中的 users_id
-      referencedTableName: "Users",  // 被參照的表格，即 Users 表
-      referencedColumnNames: ["id"],  // 被參照的欄位，即 Users 表中的 id
-      onDelete: "CASCADE",  // 當刪除對應的用戶時，密碼重設記錄也會被刪除
-      onUpdate: "CASCADE"  // 當更新用戶的 id 時，PasswordResets 中的 users_id 也會隨之更新
-    }
-  ]
+  relations: {
+    user: {
+      target: "User", // 對應到 Users 資料表
+      type: "many-to-one", // 多對一關係（多個密碼重設記錄對應一個使用者）
+      joinColumn: { name: "user_id" }, // 指定外鍵欄位名稱
+      onDelete: "CASCADE", // 刪除用戶時，自動刪除相關密碼重設記錄
+      onUpdate: "CASCADE", // 更新用戶 ID 時，自動同步更新外鍵
+    },
+  }
 })

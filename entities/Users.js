@@ -19,13 +19,13 @@ module.exports = new EntitySchema({
     email: {
       type: "varchar",
       length: 250,
-      unique: true,
+      unique: true, // 確保電子郵件唯一性
       nullable: false
     },
     password: {
       type: "varchar",
       length: 80,
-      select: false, // 密碼欄位不顯示
+      select: false, // 預設不查詢密碼欄位，提升安全性
       nullable: false,
     },
     phoneNumber: {
@@ -41,12 +41,6 @@ module.exports = new EntitySchema({
     role_id: {
       type: "uuid",
       nullable: false,
-      foreignKey: {
-        name: "role_id_fk",
-        columnNames: ["role_id"],
-        referencedTableName: "AdminRoles",
-        referencedColumnName: ["id"]
-      }
     },
     lastLoginAt: {
       type: "timestamp",
@@ -54,7 +48,7 @@ module.exports = new EntitySchema({
     },
     isActive: {
       type: "boolean",
-      default: true,
+      default: true, // 預設狀態
       nullable: false
     },
     createdAt: {
@@ -69,4 +63,11 @@ module.exports = new EntitySchema({
       nullable: false
     }
   },
+  relations: {
+    role:{
+      target: "AdminRole",
+      type: "many-to-one",
+      joinColumn: { name: "role_id" },
+    }
+  }
 })

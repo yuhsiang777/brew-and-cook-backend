@@ -80,69 +80,49 @@ module.exports = new EntitySchema({
       nullable: false,
     },
   },
-  constraints: [
-    {
-      name: "fk_user_id",  // 外鍵約束名稱
-      type: "foreign key",  // 外鍵類型
-      columnNames: ["users_id"],  // 參照的欄位
-      referencedTableName: "Users",  // 被參照的表格
-      referencedColumnNames: ["id"],  // 被參照的欄位
-      onDelete: "CASCADE",  // 當刪除用戶時，對應訂單也會被刪除
-      onUpdate: "CASCADE"  // 當更新用戶的 id 時，訂單中的 users_id 也會隨之更新
-    },
-    {
-      name: "fk_cart_id",  // 外鍵約束名稱
-      type: "foreign key",  // 外鍵類型
-      columnNames: ["cart_id"],  // 參照的欄位
-      referencedTableName: "Cart",  // 被參照的表格
-      referencedColumnNames: ["id"],  // 被參照的欄位
-      onDelete: "CASCADE",  // 當刪除對應的購物車時，訂單也會被刪除
-      onUpdate: "CASCADE"  // 當更新購物車的 id 時，訂單中的 cart_id 也會更新
-    },
-    {
-      name: "fk_product_id",  // 外鍵約束名稱
-      type: "foreign key",
-      columnNames: ["product_id"],
-      referencedTableName: "Products",
-      referencedColumnNames: ["id"],
+  relations: {
+    user: {
+      target: "User",
+      type: "many-to-one",
+      joinColumn: { name: "users_id" },
       onDelete: "CASCADE",
       onUpdate: "CASCADE"
     },
-    {
-      name: "fk_discount_id",
-      type: "foreign key",
-      columnNames: ["discount_id"],
-      referencedTableName: "Discounts",
-      referencedColumnNames: ["id"],
-      onDelete: "SET NULL",  // 如果折扣被刪除，則將訂單中的 discount_id 設為 NULL
-      onUpdate: "CASCADE"
-    },
-    {
-      name: "fk_paymentMethod_id",
-      type: "foreign key",
-      columnNames: ["paymentMethod_id"],
-      referencedTableName: "PaymentMethods",
-      referencedColumnNames: ["id"],
+    cart: {
+      target: "Cart",
+      type: "one-to-one",
+      joinColumn: { name: "cart_id" },
       onDelete: "CASCADE",
       onUpdate: "CASCADE"
     },
-    {
-      name: "fk_shippingMethod_id",
-      type: "foreign key",
-      columnNames: ["shippingMethod_id"],
-      referencedTableName: "ShippingMethods",
-      referencedColumnNames: ["id"],
-      onDelete: "CASCADE",
+    discount: {
+      target: "Discount",
+      type: "many-to-one",
+      joinColumn: { name: "discount_id" },
+      nullable: true,
+      onDelete: "SET NULL",
       onUpdate: "CASCADE"
     },
-    {
-      name: "fk_status_id",
-      type: "foreign key",
-      columnNames: ["status_id"],
-      referencedTableName: "OrderStatus",
-      referencedColumnNames: ["id"],
-      onDelete: "CASCADE",
+    paymentMethod: {
+      target: "PaymentMethod",
+      type: "many-to-one",
+      joinColumn: { name: "paymentMethod_id" },
+      onDelete: "SET NULL",
+      onUpdate: "CASCADE"
+    },
+    shippingMethod: {
+      target: "ShippingMethod",
+      type: "many-to-one",
+      joinColumn: { name: "shippingMethod_id" },
+      onDelete: "SET NULL",
+      onUpdate: "CASCADE"
+    },
+    status: {
+      target: "OrderStatus",
+      type: "many-to-one",
+      joinColumn: { name: "status_id" },
+      onDelete: "SET NULL",
       onUpdate: "CASCADE"
     }
-  ]
+  }
 })

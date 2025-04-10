@@ -14,6 +14,7 @@ module.exports = new EntitySchema({
     name: {
       type: "varchar",
       length: 50,
+      unique: true,
       nullable: false
     },
     description: {
@@ -62,11 +63,16 @@ module.exports = new EntitySchema({
   relations: {
     category: {
       target: "Category",
-      type: "one-to-one",
+      type: "many-to-one",
       joinColumn: { name: "category_id" },
-      onDelete: "RESTRICT",
+      onDelete: "SET NULL",
       onUpdate: "CASCADE"
     },
+    productTag: {
+      target: "ProductTag", // 使用中间表 ProductTag 实体
+      type: "one-to-many", 
+      cascade: true, // 允許自動保存中間表記錄
+    }
   }
 
 })

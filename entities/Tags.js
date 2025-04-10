@@ -14,6 +14,7 @@ module.exports = new EntitySchema({
     name: {
       type: "varchar",
       length: 10,
+      unique: true,
       nullable: false
     },
     description: {
@@ -30,6 +31,14 @@ module.exports = new EntitySchema({
       type: "boolean",
       default: true, // 預設狀態
       nullable: false
+    },
+    relations: {
+      // 與中間表 ProductTags 的一對多關係
+      productTags: {
+        target: "ProductTag",
+        type: "one-to-many",
+        cascade: true, 
+      },
     }
   }
 })

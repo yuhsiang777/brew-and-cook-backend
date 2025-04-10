@@ -64,10 +64,12 @@ module.exports = new EntitySchema({
     }
   },
   relations: {
-    role:{
+    role: {
       target: "AdminRole",
       type: "many-to-one",
       joinColumn: { name: "role_id" },
+      onDelete: "SET NULL",
+      onUpdate: "CASCADE"
     }
   }
 })

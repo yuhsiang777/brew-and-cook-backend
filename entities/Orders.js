@@ -21,7 +21,7 @@ module.exports = new EntitySchema({
     },
     trackingNumber: {
       type: "varchar",
-      length: "50",
+      length: 50,
       nullable: false,
     },
     subtotal: {

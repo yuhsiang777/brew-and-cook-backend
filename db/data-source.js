@@ -6,9 +6,9 @@ const config = require('../config/index');
 const entitiesDir = path.join(__dirname, '../entities');
 
 const entities = fs
-  .readdirSync(entitiesDir)
-  .filter(file => file.endsWith('.js'))
-  .map(file => require(path.join(entitiesDir, file)));
+  .readdirSync(entitiesDir) // 定義了資料庫實體所在的目錄
+  .filter(file => file.endsWith('.js')) // 過濾掉不是 .js 格式的檔案，只保留 JavaScript 檔案
+  .map(file => require(path.join(entitiesDir, file))); // 這些模組是 TypeORM 中的實體定義，代表資料庫的表。
 
 const dataSource = new DataSource({
   type: 'postgres',

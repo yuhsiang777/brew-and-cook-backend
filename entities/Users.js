@@ -14,7 +14,7 @@ module.exports = new EntitySchema({
     name: {
       type: "varchar",
       length: 25,
-      nullable: false
+      nullable: true
     },
     email: {
       type: "varchar",
@@ -24,7 +24,7 @@ module.exports = new EntitySchema({
     },
     password: {
       type: "varchar",
-      length: 80,
+      length: 100,
       select: false, // 預設不查詢密碼欄位，提升安全性
       nullable: false,
     },
@@ -41,6 +41,17 @@ module.exports = new EntitySchema({
     role_id: {
       type: "uuid",
       nullable: false,
+    },
+    // isEmailVerified
+    isEmailVerified: {
+      type: "boolean",
+      default: false,
+      nullable: false
+    },
+    // 軟刪除
+    deletedAt: {
+      type: "timestamp",
+      nullable: true
     },
     lastLoginAt: {
       type: "timestamp",

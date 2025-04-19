@@ -1,7 +1,6 @@
 const { EntitySchema } = require('typeorm')
 
 module.exports = new EntitySchema({
-
   name: "ProductTag",
   tableName: "ProductTags",
   columns: {
@@ -9,7 +8,7 @@ module.exports = new EntitySchema({
       primary: true,
       type: "uuid",
       generated: "uuid",
-      nullable: false
+      nullable: false,
     },
     product_id: {
       type: "uuid",
@@ -18,23 +17,22 @@ module.exports = new EntitySchema({
     tag_id: {
       type: "uuid",
       nullable: false,
-    }
+    },
   },
   relations: {
     product: {
       target: "Product",
       type: "many-to-one",
       joinColumn: { name: "product_id" },
-      onDelete: "CASCADE ",
-      onUpdate: "CASCADE"
+      onDelete: "CASCADE",
+      onUpdate: "CASCADE",
     },
     tag: {
       target: "Tag",
       type: "many-to-one",
       joinColumn: { name: "tag_id" },
-      onDelete: "CASCADE ",
-      onUpdate: "CASCADE"
-    }
+      onDelete: "CASCADE",
+      onUpdate: "CASCADE",
+    },
   }
-
-})
+});

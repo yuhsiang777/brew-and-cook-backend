@@ -30,10 +30,12 @@ module.exports = new EntitySchema({
     },
   },
   relations: {
-    target: "Products",
-    type: "many-to-one",
-    joinColumn: { name: "product_id" },
-    onDelete: "CASCADE",
-    onUpdate: "CASCADE"
+    product: {  // 改成指向 'Product' 實體名稱
+      target: "Product",  // 確保這裡是指向正確的 'Product' entity 名稱
+      type: "many-to-one",
+      joinColumn: { name: "product_id" },
+      onDelete: "CASCADE",
+      onUpdate: "CASCADE"
+    },
   }
 })

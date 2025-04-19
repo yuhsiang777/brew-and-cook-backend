@@ -1,9 +1,10 @@
-// app.js
 const express = require('express')
 const cors = require('cors')
 const path = require('path')
 const pinoHttp = require('pino-http')
-const logger = require('./utils/logger')
+const getLogger = require('./utils/logger') // 匯入函式
+const logger = getLogger('API') // ✅ 呼叫它取得 logger 實例
+
 const app = express()
 
 // Middleware
@@ -15,11 +16,12 @@ app.use(pinoHttp({
   logger,
   serializers: {
     req(req) {
-      req.body = req.raw.body
+      req.body = req.raw?.body
       return req
     }
   }
 }))
+
 // Routes
 app.get('/healthcheck', (req, res) => {
   res.status(200)

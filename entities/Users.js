@@ -3,7 +3,7 @@ const { EntitySchema } = require('typeorm')
 module.exports = new EntitySchema({
 
   name: "User",
-  tableName: "Users",
+  tableName: "users",
   columns: {
     id: {
       primary: true,
@@ -79,8 +79,8 @@ module.exports = new EntitySchema({
       target: "AdminRole",
       type: "many-to-one",
       joinColumn: { name: "role_id" },
-      onDelete: "SET NULL",
-      onUpdate: "CASCADE"
+      // onDelete: "RESTRICT",
+      // onUpdate: "CASCADE"
     }
   }
 })

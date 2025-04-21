@@ -2,8 +2,13 @@ const express = require('express')
 const cors = require('cors')
 const path = require('path')
 const pinoHttp = require('pino-http')
-const getLogger = require('./utils/logger') // 匯入函式
-const logger = getLogger('API') // ✅ 呼叫它取得 logger 實例
+
+const createDefaultRoles = require('./utils/createDefaultRoles') // 引入腳本
+const getLogger = require('./utils/logger'); // 匯入函式
+const logger = getLogger('API'); // ✅ 呼叫它取得 logger 實例
+
+// 路由
+const usersRouter = require('./routes/users'); 
 
 const app = express()
 
@@ -27,6 +32,11 @@ app.get('/healthcheck', (req, res) => {
   res.status(200)
   res.send('OK')
 })
+
+app.use('/api/users', usersRouter)
+
+// 在應用啟動時創建預設角色
+createDefaultRoles() // 這裡會檢查角色並在需要時創建
 
 // Error Handling
 app.use((err, req, res, next) => {

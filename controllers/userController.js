@@ -25,6 +25,8 @@ const register = async (req, res) => {
 
   try {
     const userRepo = dataSource.getRepository('User')
+    const roleRepo = dataSource.getRepository('AdminRole')
+
     const existingUser = await userRepo.findOne({ where: { email } })
 
     if (existingUser) {
@@ -32,6 +34,8 @@ const register = async (req, res) => {
     }
 
     const memberRole = await roleRepo.findOne({ where: { name: '會員' } })
+    console.log('🧩 找到的會員角色:', memberRole)
+
     if (!memberRole) {
       return res.status(500).json({ message: '找不到「會員」角色' })
     }
@@ -44,15 +48,16 @@ const register = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role_id: memberRole.id // 使用查詢到的會員角色 ID
+      role: memberRole // 使用查詢到的會員角色 ID
     })
-
+    console.log('📦 準備儲存的使用者:', user)
+    
     await userRepo.save(user)
 
     return res.status(201).json({ message: '註冊成功！' })
   } catch (err) {
     logger.error('註冊錯誤', { message: err.message, stack: err.stack })
-    console.error('🔴 註冊錯誤詳細資訊:', err) // 加上這行看更多資訊
+    console.error('🔴 註冊錯誤詳細資訊:', err) // 要能看到完整錯誤內容
     return res.status(500).json({ message: '伺服器錯誤，註冊失敗' })
   }
 }

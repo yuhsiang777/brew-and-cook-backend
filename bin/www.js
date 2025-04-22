@@ -8,6 +8,7 @@ const config = require('../config/index')
 const app = require('../app') // 導入 app.js
 const logger = require('../utils/logger')('www')
 const { dataSource } = require('../db/data-source')
+const { seedRoles } = require('../utils/seedRoles') // 引入 role 初始化腳本
 
 const port = config.get('web.port')
 
@@ -39,13 +40,20 @@ function onError (error) {
 }
 
 server.on('error', onError)
+
 server.listen(port, async () => {
   try {
+    // 初始化資料庫連線
     await dataSource.initialize()
     logger.info('資料庫連線成功')
+
+    // 在資料庫連線成功後初始化角色
+    await seedRoles()
+    logger.info('角色初始化完成')
+
     logger.info(`伺服器運作中. port: ${port}`)
   } catch (error) {
-    logger.error(`資料庫連線失敗: ${error.message}`)
+    logger.error(`資料庫連線或角色初始化失敗: ${error.message}`)
     process.exit(1)
   }
 })

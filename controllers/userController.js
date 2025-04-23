@@ -1,6 +1,7 @@
 // POST - 註冊新帳號
-const { dataSource } = require('../db/data-source')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')  // 假設你會用 JWT 驗證
+const { dataSource } = require('../db/data-source')
 const logger = require('../utils/logger')('User')
 const {
   isNotValidEmail,
@@ -10,6 +11,7 @@ const {
 
 const saltRounds = 10
 
+// 註冊方法
 const register = async (req, res) => {
   const { email, password, name } = req.body
 
@@ -68,12 +70,25 @@ const register = async (req, res) => {
       email,  // 記錄 email 和 name，便於追蹤
       name    // 記錄 name，便於追蹤
     })
-    
+
     // 在開發環境中，繼續顯示錯誤訊息給開發者，生產環境可以略過
     console.error('註冊錯誤詳細資訊:', err)
 
     return res.status(500).json({ message: '伺服器錯誤，註冊失敗' })
   }
 }
+
+// 登入方法
+const signIn = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (isNotValidEmail(email)) { }
+  if (isNotValidPassword(email)) { }
+
+  try {
+
+  } catch (err) { }
+}
+
 
 module.exports = { register }

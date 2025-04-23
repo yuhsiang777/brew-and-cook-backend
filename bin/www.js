@@ -3,6 +3,51 @@
 /**
  * Module dependencies.
  */
+
+const http = require('http');
+const config = require('../config');
+const app = require('../app');
+const logger = require('../utils/logger')('www');
+const { initializeDatabase, seedRoles } = require('../utils/initializer'); // 引入初始化功能
+
+const port = config.get('web.port');
+app.set('port', port);
+
+const server = http.createServer(app);
+
+server.on('error', (error) => handleError(error, port));
+
+server.listen(port, async () => {
+  try {
+    await initializeDatabase();
+    await seedRoles();
+    logger.info(`伺服器運作中. port: ${port}`);
+  } catch (error) {
+    logger.error(`啟動失敗: ${error.message}`);
+    process.exit(1);
+  }
+});
+
+function handleError(error, port) {
+  if (error.syscall !== 'listen') throw error;
+  const bind = typeof port === 'string' ? `Pipe ${port}` : `Port ${port}`;
+  
+  switch (error.code) {
+    case 'EACCES':
+      logger.error(`${bind} requires elevated privileges`);
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      logger.error(`${bind} is already in use`);
+      process.exit(1);
+      break;
+    default:
+      logger.error(`exception on ${bind}: ${error.code}`);
+      process.exit(1);
+  }
+}
+
+/*
 const http = require('http')
 const config = require('../config/index')
 const app = require('../app') // 導入 app.js
@@ -57,3 +102,4 @@ server.listen(port, async () => {
     process.exit(1)
   }
 })
+*/

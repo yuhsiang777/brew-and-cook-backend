@@ -6,24 +6,31 @@ const logger = require('../utils/logger')('User')
 const {
   isNotValidEmail,
   isNotValidPassword,
-  isNotValidString
+  isNotValidString,
+  isUndefined
 } = require('../utils/validUtils')
 
 const saltRounds = 10
 
 // 註冊方法
 const register = async (req, res) => {
-  const { email, password, name } = req.body
+  const { email, password, name } = req.body;
 
   // 驗證輸入
+  if (
+    isUndefined(email) || isUndefined(password) || isUndefined(name) ||
+    isNotValidString(email) || isNotValidString(password) || isNotValidString(name)
+  ) {
+    return res.status(400).json({ message: '格式錯誤' });
+  }
   if (isNotValidEmail(email)) {
-    return res.status(400).json({ message: 'Email 格式錯誤' })
+    return res.status(400).json({ message: 'Email 格式錯誤' });
   }
   if (isNotValidPassword(password)) {
-    return res.status(400).json({ message: '密碼格式錯誤' })
+    return res.status(400).json({ message: '密碼格式錯誤' });
   }
   if (isNotValidString(name)) {
-    return res.status(400).json({ message: '名稱不得為空' })
+    return res.status(400).json({ message: '名稱不得為空' });
   }
 
   try {
@@ -82,12 +89,75 @@ const register = async (req, res) => {
 const signIn = async (req, res) => {
   const { email, password } = req.body;
 
-  if (isNotValidEmail(email)) { }
-  if (isNotValidPassword(email)) { }
+  // 驗證輸入
+  if (
+    isUndefined(email) || isUndefined(password) ||
+    isNotValidString(email) || isNotValidString(password)
+  ) {
+    return res.status(400).json({ message: '格式錯誤' })
+  }
+  if (isNotValidEmail(email)) { return res.status(400).json({ message: 'Email 格式錯誤' }) }
+  if (isNotValidPassword(email)) { return res.status(400).json({ message: '密碼格式錯誤' }) }
 
   try {
+    const userRepo = dataSource.getRepository('User');
 
-  } catch (err) { }
+
+    const existingUser = await userRepo
+      .createQueryBuilder('user')
+      .addSelect('user.password')
+      .where('user.email = :email', { email })
+      .getOne();
+
+    if (!existingUser) { // 比對 Email 是否正確
+      return res.status(401).json({ message: '帳號或密碼錯誤' });
+    }
+
+    const isPasswordMatch = await bcrypt.compare(password, existingUser.password);
+    if (!isPasswordMatch) { // 比對 密碼 是否正確
+      return res.status(401).json({ message: '帳號或密碼錯誤' });
+    }
+
+    // 檢查帳號狀態
+    if (!existingUser.isActive || existingUser.deletedAt) {
+      return res.status(403).json({ message: '此帳號已停用' });
+    }
+
+    // 更新最後登入時間
+    existingUser.lastLoginAt = new Date();
+    await userRepo.save(existingUser);
+
+    // 簽發 JWT Token（可依你需求擴充 payload）
+    const token = jwt.sign(
+      { userId: existingUser.id, role: existingUser.role_id },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    return res.status(200).json({
+      message: '登入成功',
+      token,
+      user: {
+        id: existingUser.id,
+        email: existingUser.email,
+        name: existingUser.name,
+      },
+    });
+
+  } catch (err) {
+    // 記錄錯誤
+    logger.error({
+      message: '登入過程中出錯',
+      error: err.message,
+      stack: err.stack,
+      email,  // 記錄 email ，便於追蹤
+    })
+
+    // 在開發環境中，繼續顯示錯誤訊息給開發者，生產環境可以略過
+    console.error('登入錯誤詳細資訊:', err)
+
+    return res.status(500).json({ message: '伺服器錯誤，登入失敗' })
+  }
 }
 
 

@@ -1,4 +1,3 @@
-// POST - 註冊新帳號
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')  // 假設你會用 JWT 驗證
 const { dataSource } = require('../db/data-source')

@@ -7,6 +7,7 @@ const logger = getLogger('API');  // 用 'API' 作為前綴
 
 const createDefaultRoles = require('./utils/createDefaultRoles');  // 創建角色的函數
 const usersRouter = require('./routes/users');  // 用戶路由
+const productRoutes = require('./routes/products'); // 產品路由
 
 const app = express();
 
@@ -32,9 +33,9 @@ app.get('/healthcheck', (req, res) => {
 });
 
 app.use('/api/users', usersRouter);
-
 // 在應用啟動時創建預設角色
 createDefaultRoles();
+app.use('/api/v1/products', productRoutes);
 
 // 錯誤處理
 app.use((err, req, res, next) => {

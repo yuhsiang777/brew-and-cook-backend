@@ -3,6 +3,7 @@ const express = require('express')
 const router = express.Router()
 const userController = require('../controllers/userController')
 
+
 // Middlewares
 const {
   validateRegister,
@@ -16,6 +17,7 @@ router.post('/sign-up', validateRegister, userController.register)
 router.post('/sign-in', validateLogin, userController.signIn)
 // Users - 登出 API
 router.post('/sign-out', authJWT, userController.signOut)
+
 
 
 module.exports = router

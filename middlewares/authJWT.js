@@ -1,17 +1,26 @@
 const jwt = require('jsonwebtoken');
+require('dotenv').config(); // 讀取 JWT_SECRET
 
-const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1]; // 取出 Bearer token
+function authJWT(req, res, next) {
+  const authHeader = req.headers.authorization;
 
-  if (!token) {
-    return res.status(401).json({ message: '未登入，無權限存取' });
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: '未提供有效的授權資訊' });
   }
+
+  const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // 把解碼資料塞進 req 裡
-    next(); // 放行給下一層 middleware 或 controller
-  } catch (err) {
-    return res.status(401).json({ message: 'Token 無效或已過期' });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+      algorithms: ['HS256'],      // 明確指定算法
+      clockTolerance: 15,         // 允許15秒時差
+      maxAge: '7d'                // 強制過期時間
+    });
+    req.user = decoded; // 把解析後的 user 放進 req 裡
+    next(); // 通過驗證，進入下一層
+  } catch (error) {
+    return res.status(403).json({ message: 'JWT 驗證失敗或過期' });
   }
-};
+}
+
+module.exports = authJWT;

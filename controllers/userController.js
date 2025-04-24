@@ -16,41 +16,37 @@ const saltRounds = 10
 const register = async (req, res) => {
   const { email, password, name } = req.body;
 
-  // 驗證輸入
-  if (
-    isUndefined(email) || isUndefined(password) || isUndefined(name) ||
-    isNotValidString(email) || isNotValidString(password) || isNotValidString(name)
-  ) {
-    return res.status(400).json({ message: '格式錯誤' });
-  }
-  if (isNotValidEmail(email)) {
-    return res.status(400).json({ message: 'Email 格式錯誤' });
-  }
-  if (isNotValidPassword(password)) {
-    return res.status(400).json({ message: '密碼格式錯誤' });
-  }
-  if (isNotValidString(name)) {
-    return res.status(400).json({ message: '名稱不得為空' });
-  }
-
   try {
-    const userRepo = dataSource.getRepository('User')
-    const roleRepo = dataSource.getRepository('AdminRole')
+    const userRepo = dataSource.getRepository('User');
+    const roleRepo = dataSource.getRepository('AdminRole');
 
     // 檢查是否有重複的 email
-    const existingUser = await userRepo.findOne({ where: { email } })
+    const existingUser = await userRepo.findOne({ where: { email } });
     if (existingUser) {
-      logger.info(`重複註冊的 Email: ${email}`)
-      return res.status(409).json({ message: '這個 Email 已被註冊' })
+      logger.info(`重複註冊的 Email: ${email}`);
+      return res.status(409).json({ message: '這個 Email 已被註冊' });
     }
 
     // 查詢角色
-    const memberRole = await roleRepo.findOne({ where: { name: '會員' } })
+    let memberRole = await roleRepo.findOne({ where: { name: '會員' } });
+    if (!memberRole) {
+      try {
+        logger.warn('自動創建「會員」角色');
+        memberRole = roleRepo.create({ name: '會員', permissions: [] });
+        await roleRepo.save(memberRole);
+      } catch (err) {
+        logger.error(`自動創建角色失敗: ${err.message}`);
+        return res.status(500).json({ message: '系統初始化失敗，請聯絡管理員' });
+      }
+
+    }
+
+    /*const memberRole = await roleRepo.findOne({ where: { name: '會員' } });
     if (!memberRole) {
       // 若找不到角色，則記錄詳細錯誤並返回 500
-      logger.error(`找不到「會員」角色，Email: ${email}, Name: ${name}`)
-      return res.status(500).json({ message: '找不到「會員」角色，請聯絡管理員' })
-    }
+      logger.error(`找不到「會員」角色，Email: ${email}, Name: ${name}`);
+      return res.status(500).json({ message: '找不到「會員」角色，請聯絡管理員' });
+    }*/
 
     // 密碼加密
     const hashedPassword = await bcrypt.hash(password, saltRounds)
@@ -71,7 +67,7 @@ const register = async (req, res) => {
   } catch (err) {
     // 記錄錯誤
     logger.error({
-      message: '註冊過程中出錯',
+      message: '註冊錯誤',
       error: err.message,
       stack: err.stack,
       email,  // 記錄 email 和 name，便於追蹤
@@ -89,23 +85,13 @@ const register = async (req, res) => {
 const signIn = async (req, res) => {
   const { email, password } = req.body;
 
-  // 驗證輸入
-  if (
-    isUndefined(email) || isUndefined(password) ||
-    isNotValidString(email) || isNotValidString(password)
-  ) {
-    return res.status(400).json({ message: '格式錯誤' })
-  }
-  if (isNotValidEmail(email)) { return res.status(400).json({ message: 'Email 格式錯誤' }) }
-  if (isNotValidPassword(email)) { return res.status(400).json({ message: '密碼格式錯誤' }) }
-
   try {
     const userRepo = dataSource.getRepository('User');
-
 
     const existingUser = await userRepo
       .createQueryBuilder('user')
       .addSelect('user.password')
+      .leftJoinAndSelect('user.role', 'role')
       .where('user.email = :email', { email })
       .getOne();
 
@@ -129,7 +115,7 @@ const signIn = async (req, res) => {
 
     // 簽發 JWT Token（可依你需求擴充 payload）
     const token = jwt.sign(
-      { userId: existingUser.id, role: existingUser.role_id },
+      { userId: existingUser.id, role: existingUser.role.id },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -141,9 +127,9 @@ const signIn = async (req, res) => {
         id: existingUser.id,
         email: existingUser.email,
         name: existingUser.name,
+        role: existingUser.role.name
       },
     });
-
   } catch (err) {
     // 記錄錯誤
     logger.error({
@@ -152,13 +138,31 @@ const signIn = async (req, res) => {
       stack: err.stack,
       email,  // 記錄 email ，便於追蹤
     })
-
     // 在開發環境中，繼續顯示錯誤訊息給開發者，生產環境可以略過
     console.error('登入錯誤詳細資訊:', err)
-
     return res.status(500).json({ message: '伺服器錯誤，登入失敗' })
   }
 }
 
+// 登出方法
+const signOut = async (req, res) => {
+  try {
+    const userRepo = dataSource.getRepository('User');
+    const userId = req.user.userId;
 
-module.exports = { register }
+    // 查詢並更新登出時間
+    const user = await userRepo.findOne({ where: { id: userId } });
+    if (user) {
+      user.lastLogoutAt = new Date();
+      await userRepo.save(user);
+    }
+
+    return res.status(200).json({ message: '登出成功' });
+  } catch (err) {
+    return res.status(500).json({
+      message: '伺服器錯誤，登出失敗', error: err.message
+    });
+  }
+}
+
+module.exports = { register, signIn, signOut }

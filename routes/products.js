@@ -12,5 +12,7 @@ const productController = require('../controllers/productController');
 
 // 取得產品列表
 router.get('/', productController.getAllProducts);
+// 取得產品單一資訊
+router.get('/:id', productController.getProductById);
 
 module.exports = router;

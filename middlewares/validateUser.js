@@ -46,6 +46,16 @@ function validateLogin(req, res, next) {
     return sendErrorResponse(res, 400, '請輸入有效的 Email 地址');
   }
 
+  // 驗證 email 格式
+  if (isNotValidEmail(email)) {
+    return sendErrorResponse(res, 400, 'Email 格式錯誤');
+  }
+
+  // 驗證密碼格式
+  if (isNotValidPassword(password)) {
+    return sendErrorResponse(res, 400, '密碼格式錯誤，需包含大小寫字母和數字，長度 8~16');
+  }
+
   next();
 }
 

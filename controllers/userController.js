@@ -44,8 +44,8 @@ const userController = {
         token
       });
     } catch (err) {
-      logger.error(`註冊錯誤：${error.message}`);
-      return sendErrorResponse(res, 500, '註冊失敗', { error: error.message });
+      logger.error(`註冊錯誤：${err.message}`);
+      return sendErrorResponse(res, 500, '註冊失敗', { error: err.message });
     }
   },
   // 登入方法
@@ -79,8 +79,8 @@ const userController = {
       });
 
     } catch (err) {
-      logger.error(`登入錯誤：${error.message}`);
-      return sendErrorResponse(res, 500, '登入失敗', { error: error.message });
+      logger.error(`登入錯誤：${err.message}`);
+      return sendErrorResponse(res, 500, '登入失敗', { error: err.message });
     }
   },
   // 登出方法
@@ -90,10 +90,11 @@ const userController = {
       logger.info(`使用者登出成功：${req.user?.email}`);
       return res.status(200).json({
         message: '登出成功',
-        status: true
+        status: true,
+        token: null
       })
     } catch (err) {
-      logger.error(`登出錯誤：${error.message}`);
+      logger.error(`登出錯誤：${err.message}`);
       return sendErrorResponse(res, 500, '登出失敗', { error: error.message });
     }
   }

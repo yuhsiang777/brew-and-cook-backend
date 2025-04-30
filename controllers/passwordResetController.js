@@ -58,8 +58,9 @@ async function resetPassword(req, res) {
     return sendErrorResponse(res, 404, '用戶不存在');
   }
 
-  // 更新密碼 (你可以使用 bcrypt 或其他方式加密密碼)
-  user.password = newPassword; // 假設密碼是明文存儲，實際應該加密
+  // 更新密碼
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  user.password = hashedPassword;
   await user.save();
 
   // 刪除已使用的重設 token

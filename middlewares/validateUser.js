@@ -41,14 +41,9 @@ function validateLogin(req, res, next) {
   if (isNotValidString(email) || isNotValidString(password)) {
     return sendErrorResponse(res, 400, '欄位不得為空白');
   }
-
-  if (isNotValidEmail(email)) {
-    return sendErrorResponse(res, 400, '請輸入有效的 Email 地址');
-  }
-
   // 驗證 email 格式
   if (isNotValidEmail(email)) {
-    return sendErrorResponse(res, 400, 'Email 格式錯誤');
+    return sendErrorResponse(res, 400, '請輸入有效的 Email 地址');
   }
 
   // 驗證密碼格式

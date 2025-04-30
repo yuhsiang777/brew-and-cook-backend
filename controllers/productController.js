@@ -12,8 +12,8 @@ const getAllProducts = async (req, res) => {
     const productRepo = dataSource.getRepository('Product');
 
     // 解析查詢參數（具預設值）
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const page = Math.max(1, parseInt(req.query.page)) || 1;
+    const limit = Math.min(100, parseInt(req.query.limit)) || 10;
     const keyword = req.query.keyword || '';
     const tagIds = req.query.tagIds ? req.query.tagIds.split(',').map(id => parseInt(id)) : [];
 
@@ -23,12 +23,12 @@ const getAllProducts = async (req, res) => {
     const queryBuilder = productRepo
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.images', 'images')
-      .leftJoinAndSelect('product.tags', 'productTags')
-      .leftJoinAndSelect('productTags.tag', 'tag') // 若關聯名稱為 tag
+      .leftJoinAndSelect('product.tags', 'tags')
+      .leftJoinAndSelect('tags.productTags', 'productTags')
       .leftJoinAndSelect('product.inventoryLogs', 'inventoryLogs');
 
     // 搜尋產品名稱
-    if (keyword) {
+    if (keyword.trim()) {
       queryBuilder.andWhere('product.name LIKE :keyword', { keyword: `%${keyword}%` });
     }
 
@@ -69,8 +69,8 @@ const getProductById = async (req, res) => {
     const productRepo = dataSource.getRepository('Product');
     const id = parseInt(req.params.id);
 
-    if (!isNotValidString(id) || !isUndefined(id)) {
-      return sendErrorResponse(res, 400, '產品 ID 必須是數字');
+    if (isNaN(id)) {
+      return sendErrorResponse(res, 400, '產品 ID 必須是有效的數字');
     }
 
     const product = await productRepo.findOne({
